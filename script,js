@@ -1,0 +1,217 @@
+const chatBtn = document.getElementById("chatbot-btn");
+const chatWindow = document.getElementById("chatContainer");
+const closeChat = document.getElementById("closeChat");
+
+chatBtn.onclick = () => {
+    chatWindow.style.display = "flex";
+
+    //  Slide + fade animation
+    setTimeout(() => {
+        chatWindow.classList.add("show");
+    }, 20);
+
+    //  Bounce effect on floating button
+    chatBtn.classList.add("clicked");
+    setTimeout(() => chatBtn.classList.remove("clicked"), 400);
+};
+
+closeChat.onclick = () => {
+    chatWindow.classList.remove("show");
+
+    setTimeout(() => {
+        chatWindow.style.display = "none";
+    }, 350);
+};
+
+const sendBtn = document.getElementById("sendBtn");
+const input = document.getElementById("userInput");
+const chatBody = document.getElementById("chatBody");
+const mainAvatar = document.getElementById("mainBotAvatar");
+
+sendBtn.addEventListener("click", sendMessage);
+input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendMessage();
+});
+
+/* Suggestions */
+document.querySelectorAll(".suggest-btn").forEach(btn => {
+    btn.onclick = () => {
+        input.value = btn.innerText;
+        sendMessage();
+    };
+});
+
+function sendMessage() {
+    let message = input.value.trim();
+    if (message === "") return;
+
+    let userMsg = document.createElement("div");
+    userMsg.className = "user-message";
+    userMsg.innerHTML = `<p>${message}</p>`;
+    chatBody.appendChild(userMsg);
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    input.value = "";
+
+    let greetings = ["hi", "hello", "hii", "hey", "hola", "hi shri", "hello shri"];
+    let cleaned = message.toLowerCase();
+
+    let randomGreetings = [
+        "Hello! 😊 How else can I help you?",
+        "Hi there! 👋 What would you like to know?",
+        "Hey! 🧑‍💻 How can I assist you today?",
+        "Hello! 😎 Feel free to ask anything.",
+        "Hi! ✅ I'm here to help."
+    ];
+    //  College replies
+const qa = [
+    { q: ["admission", "how to take admission", "admission process"], 
+      a: "📌 *Admission Process:*<br>• Visit the college office<br>• Fill admission form<br>• Submit required documents<br>• Pay fees at counter<br><br>For more details, contact the college office." 
+    },
+
+    { q: ["fees", "fee structure", "course fees"], 
+      a: "💰 *Fee Structure:*<br>• BCA – ₹30,000 / year<br>• BBA – ₹28,000 / year<br>• BSc – ₹25,000 / year<br> B.Tech - 40,000 to 70,000 / year<br><br>Note: Fees may vary; contact admin for confirmation." 
+    },
+
+    { q: ["timing", "college timing", "when college opens"], 
+      a: "⏰ *College Timings:*<br>Monday to Friday → 9:00 AM – 4:00 PM" 
+    },
+
+    { q: ["holiday", "holidays", "vacation"], 
+      a: "📅 *Holiday List:*<br>• Sunday – Weekly Off<br>• National Holidays (26 Jan, 15 Aug, 2 Oct)<br>• Diwali Holidays: 5 Days" 
+    },
+
+    { q: ["facility", "facilities", "campus"], 
+      a: "🏫 *Campus Facilities:*<br>• Library<br>• Computer Lab<br>• Smart Classrooms<br>• Sports Ground<br>• Canteen" 
+    },
+
+    { q: ["principal", "hod", "contact"], 
+      a: "📞 *Important Contacts:*<br>• Principal: 1234567890<br>• Office: 9876543210" 
+    }
+];
+
+let reply = "";
+
+// If greeting → random reply
+if (greetings.includes(cleaned)) {
+    reply = randomGreetings[Math.floor(Math.random() * randomGreetings.length)];
+} else {
+    // Search through custom college questions
+    let found = false;
+
+    for (let i = 0; i < qa.length; i++) {
+        for (let keyword of qa[i].q) {
+            if (cleaned.includes(keyword)) {
+                reply = qa[i].a;
+                found = true;
+                break;
+            }
+        }
+        if (found) break;
+    }
+
+    // If nothing matched → default
+    if (!found) {
+        reply = `<strong>NOTE:</strong> Kindly ask only your college related queries 🙏`;
+    }
+}
+
+    //  Typing animation
+    mainAvatar.classList.add("typing-glow");
+
+    let typing = document.createElement("div");
+    typing.className = "typing";
+    typing.innerHTML = `
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+`;
+    chatBody.appendChild(typing);
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+let delay = Math.floor(Math.random() * 1500) + 1000; // between 1–2.5 sec
+
+setTimeout(() => {
+        typing.remove();
+        mainAvatar.classList.remove("typing-glow");
+
+        let botMsg = document.createElement("div");
+        botMsg.className = "bot-message";
+        botMsg.innerHTML = `
+            <div class="bot-avatar small">🤖</div>
+            <p>${reply}</p>
+        `;
+        chatBody.appendChild(botMsg);
+
+        chatBody.scrollTop = chatBody.scrollHeight;
+
+    }, 2500);
+}
+
+/*  Voice Input – Speech to Text */
+const voiceBtn = document.getElementById("voiceBtn");
+
+let recognition;
+if ("webkitSpeechRecognition" in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+        voiceBtn.classList.add("listening");
+        voiceBtn.innerText = "🎙️";
+    };
+
+    recognition.onend = () => {
+        voiceBtn.classList.remove("listening");
+        voiceBtn.innerText = "🎤";
+    };
+
+    recognition.onresult = (event) => {
+        const speech = event.results[0][0].transcript;
+        input.value = speech;
+        sendMessage();
+    };
+}
+
+voiceBtn.onclick = () => {
+    if (recognition) recognition.start();
+    else alert("Your browser does not support Speech Recognition");
+};
+
+//  Google Sheet notice fetch
+const noticeUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoQU9GJHi-PAcHqawJorVdh_XpX7kDGeH_tuMBeC8G9dGoms4nwUtQtkcy_GeGyHJDMgahpkvr94Cz/pub?gid=0&single=true&output=csv";
+
+let lastNotice = ""; // to store last notice
+
+async function fetchNotice() {
+    try {
+        const res = await fetch(noticeUrl);
+        const text = await res.text();
+        const rows = text.split("\n");
+        const latest = rows[1]?.split(",")[0] || "No notice found";
+
+        if (latest !== lastNotice) {
+            lastNotice = latest;
+            showNotice(latest);
+        }
+
+    } catch (err) {
+        console.log("Notice fetch error:", err);
+    }
+}
+function showNotice(msg) {
+    let botMsg = document.createElement("div");
+    botMsg.className = "bot-message";
+    botMsg.innerHTML = `
+        <div class="bot-avatar small">🤖</div>
+        <p><strong>📢 Notice:</strong> ${msg}</p>
+    `;
+    chatBody.appendChild(botMsg);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+document.getElementById("noticeBtn").onclick = () => {
+    fetchNotice();
+};
