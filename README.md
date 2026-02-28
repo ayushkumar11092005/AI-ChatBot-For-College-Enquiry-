@@ -27,7 +27,7 @@ Double-click index.html or open it in any browser.
 Start chatting with the AI chatbot.
 🌐 Live Demo
 👉 Click here to view the live demo:
-Live Demo Link
+http://127.0.0.1:5500/index.html
 
 👨‍💻 Project Purpose
 This project was developed as a college academic project to demonstrate how AI-based chat systems can automate student inquiry handling and improve communication efficiency.
